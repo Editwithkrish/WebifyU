@@ -66,24 +66,14 @@ export default function Home() {
   }
 
   const toggleVideo = () => {
-    if (videoRef.current) {
+    const iframe = document.querySelector('iframe');
+    if (iframe && iframe.contentWindow) {
       if (isVideoPlaying) {
-        videoRef.current.pause()
-        setIsVideoPlaying(false)
+        iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+        setIsVideoPlaying(false);
       } else {
-        // Play returns a promise that might be rejected
-        const playPromise = videoRef.current.play()
-
-        if (playPromise !== undefined) {
-          playPromise
-            .then(() => {
-              setIsVideoPlaying(true)
-            })
-            .catch((error) => {
-              console.error("Error playing video:", error)
-              // Don't update state if play fails
-            })
-        }
+        iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+        setIsVideoPlaying(true);
       }
     }
   }
@@ -323,18 +313,12 @@ export default function Home() {
                 <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-primary via-secondary to-accent animate-pulse-glow opacity-70"></div>
                 <div className="relative h-[300px] md:h-[400px] rounded-xl overflow-hidden shadow-2xl">
                   <div className="relative w-full h-full">
-                    <video
-                      ref={videoRef}
+                    <iframe
+                      src="https://www.youtube.com/embed/UalzN5gKSg8?enablejsapi=1&controls=0&showinfo=0&rel=0&autoplay=0&mute=1"
                       className="w-full h-full object-cover"
-                      poster="/placeholder.svg?height=800&width=800"
-                      onEnded={() => setIsVideoPlaying(false)}
-                      onCanPlay={() => videoRef.current?.pause()}
-                      preload="metadata"
-                      muted
-                    >
-                      <source src="/videos/darm-video.mp4" type="video/mp4" />
-                      Your browser does not support the video tag.
-                    </video>
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
                     <button
                       onClick={toggleVideo}
                       className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors"
